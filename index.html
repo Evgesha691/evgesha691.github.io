@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Мой первый Mini App</title>
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    </head>
-    <body>
-        <h1>Привет, Telegram!</h1>
-        <p>Это моё первое мини-приложение!</p>
-
-        <script>
-            let tg = window.Telegram.WebApp;
-            tg.MainButton.setText("Нажми меня");
-            tg.MainButton.show();
-            tg.MainButton.onClick(() => {
-                tg.showAlert("Ты нажал на кнопку!");
-            });
-        </script>
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <title>Evgesha Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: system-ui;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        button {
+            background: #2481cc;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Evgesha Panel</h1>
+    <p>Загрузка...</p>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        window.location.href = "admin.html";
+    </script>
+</body>
 </html>
