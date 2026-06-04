@@ -57,6 +57,7 @@
                 
                 let status = data.result?.status;
                 
+                // Разрешаем доступ для обычных участников, админов и создателя чата
                 if (status === "member" || status === "administrator" || status === "creator") {
                     sessionStorage.setItem("evgesha_auth", "true");
                     window.location.href = "admin.html";
