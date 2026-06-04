@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Evgesha Panel — Админка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #ffffff;
+            margin: 0;
+            padding: 16px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+        .bots-list {
+            margin-top: 20px;
+        }
+        .bot-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        .send-area {
+            margin-top: 24px;
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 12px;
+        }
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #2481cc;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">Evgesha Panel</div>
+        <button class="logout-btn" id="logoutBtn">Выйти</button>
+    </div>
+    <div class="bots-list" id="botsList">
+        Загрузка...
+    </div>
+    <div class="send-area">
+        <h3>Отправка кода</h3>
+        <textarea id="codePayload" rows="4" placeholder="Python-код для рассылки"></textarea>
+        <button id="sendBtn">Отправить</button>
+    </div>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        function loadBots() {
+            document.getElementById('botsList').innerHTML = '<div class="bot-item">Evgesha panel bot</div><div class="bot-item">Сюда можно добавить других ботов</div>';
+        }
+        document.getElementById('sendBtn').onclick = () => {
+            let code = document.getElementById('codePayload').value;
+            if (!code) return tg.showAlert("Введите код");
+            tg.showAlert("Отправлено");
+        };
+        document.getElementById('logoutBtn').onclick = () => {
+            window.location.href = 'index.html';
+        };
+        loadBots();
+    </script>
+</body>
+</html>
