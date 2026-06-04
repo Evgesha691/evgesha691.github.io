@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Evgesha Panel</title>
+    <title>Evgesha Panel — вход</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: system-ui;
+            font-family: system-ui, sans-serif;
             text-align: center;
             padding: 40px 20px;
         }
@@ -18,16 +18,65 @@
             border: none;
             border-radius: 12px;
             font-size: 16px;
+            cursor: pointer;
+        }
+        .loading {
+            color: #666;
+        }
+        .error {
+            color: red;
         }
     </style>
 </head>
 <body>
     <h1>Evgesha Panel</h1>
-    <p>Загрузка...</p>
+    <div id="status">
+        <p class="loading">Проверка доступа...</p>
+    </div>
+
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        window.location.href = "admin.html";
+
+        const CHAT_USERNAME = "evgeshapanel";
+        const BOT_TOKEN = "8851590134:AAHKfkbNANyrmVlSMzN3TIYkoPFZwnI9ccM";
+
+        async function checkAccess() {
+            let user = tg.initDataUnsafe?.user;
+            
+            if (!user) {
+                document.getElementById('status').innerHTML = '<p class="error">Открой приложение из Telegram</p>';
+                return;
+            }
+
+            let url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHAT_USERNAME}&user_id=${user.id}`;
+            
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                
+                let status = data.result?.status;
+                
+                if (status === "member" || status === "administrator" || status === "creator") {
+                    sessionStorage.setItem("evgesha_auth", "true");
+                    window.location.href = "admin.html";
+                } else {
+                    document.getElementById('status').innerHTML = `
+                        <p class="error">Доступ запрещён.</p>
+                        <p>Ты не подписан на канал или не в чате.</p>
+                        <button id="joinBtn">Вступить</button>
+                    `;
+                    document.getElementById('joinBtn').onclick = () => {
+                        tg.openTelegramLink(`https://t.me/${CHAT_USERNAME}`);
+                        tg.showAlert("Вступи в чат, затем закрой и открой приложение заново");
+                    };
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = '<p class="error">Ошибка проверки. Попробуй позже.</p>';
+            }
+        }
+
+        checkAccess();
     </script>
 </body>
 </html>
