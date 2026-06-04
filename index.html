@@ -55,10 +55,7 @@
                 let response = await fetch(url);
                 let data = await response.json();
                 
-                let status = data.result?.status;
-                
-                // Разрешаем доступ для обычных участников, админов и создателя чата
-                if (status === "member" || status === "administrator" || status === "creator") {
+                if (data.ok === true) {
                     sessionStorage.setItem("evgesha_auth", "true");
                     window.location.href = "admin.html";
                 } else {
