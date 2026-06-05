@@ -45,11 +45,14 @@
             padding: 16px;
             border-radius: 12px;
         }
-        textarea {
+        input, textarea {
             width: 100%;
             padding: 8px;
             margin-bottom: 12px;
             box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: monospace;
         }
         button {
             background: #2481cc;
@@ -58,37 +61,160 @@
             padding: 10px;
             border-radius: 8px;
             width: 100%;
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="title">Evgesha Panel</div>
+        <div class="title">🤖 Evgesha Panel</div>
         <button class="logout-btn" id="logoutBtn">Выйти</button>
     </div>
+
     <div class="bots-list" id="botsList">
-        Загрузка...
+        <div class="bot-item">✅ @Evgesha_panelbot</div>
+        <div class="bot-item">📁 @EvgeshaFileBot (файловый бот)</div>
     </div>
+
     <div class="send-area">
-        <h3>Отправка кода</h3>
-        <textarea id="codePayload" rows="4" placeholder="Python-код для рассылки"></textarea>
-        <button id="sendBtn">Отправить</button>
+        <h3>📤 Создать / обновить приложение</h3>
+        <input type="text" id="appName" placeholder="Имя файла (например, myapp.html)">
+        <textarea id="codePayload" rows="6" placeholder="HTML код твоего мини-приложения"></textarea>
+        <button id="sendBtn">Отправить файловому боту</button>
+        <div id="statusMsg" style="display:none;" class="status"></div>
+        <button id="linkBotBtn" style="margin-top: 10px; background: #6c757d;">Связаться с файловым ботом (отправить /start)</button>
     </div>
+
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-        function loadBots() {
-            document.getElementById('botsList').innerHTML = '<div class="bot-item">Evgesha panel bot</div><div class="bot-item">Сюда можно добавить других ботов</div>';
+
+        const FILE_BOT_TOKEN = "8535846919:AAGFOk9KLb4g09wvwsjBrZ_74EfjmxL4elQ";
+
+        const userId = tg.initDataUnsafe?.user?.id;
+        if (!userId) {
+            alert("Не удалось определить пользователя. Открой приложение из Telegram.");
         }
-        document.getElementById('sendBtn').onclick = () => {
-            let code = document.getElementById('codePayload').value;
-            if (!code) return tg.showAlert("Введите код");
-            tg.showAlert("Отправлено");
+
+        function showStatus(text, type) {
+            const statusDiv = document.getElementById('statusMsg');
+            statusDiv.textContent = text;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function sendMessageToFileBot(text) {
+            const url = `https://api.telegram.org/bot${FILE_BOT_TOKEN}/sendMessage`;
+            const payload = {
+                chat_id: userId,
+                text: text
+            };
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                return data.ok === true;
+            } catch (error) {
+                console.error(error);
+                return false;
+            }
+        }
+
+        document.getElementById('linkBotBtn').onclick = async () => {
+            const ok = await sendMessageToFileBot("/start");
+            if (ok) {
+                showStatus("✅ Связь с файловым ботом установлена! Теперь можно отправлять команды.", "success");
+            } else {
+                showStatus("❌ Не удалось отправить /start. Убедись, что бот @EvgeshaFileBot существует и токен верен.", "error");
+            }
         };
+
+        document.getElementById('sendBtn').onclick = async () => {
+            let appName = document.getElementById('appName').value.trim();
+            const code = document.getElementById('codePayload').value.trim();
+
+            if (!appName) {
+                showStatus("Введите имя файла", "error");
+                return;
+            }
+            if (!code) {
+                showStatus("Введите HTML код", "error");
+                return;
+            }
+
+            if (!appName.endsWith('.html')) {
+                appName += '.html';
+            }
+
+            showStatus("Отправка команды /newapp ...", "info");
+            const cmdOk = await sendMessageToFileBot(`/newapp ${appName}`);
+            if (!cmdOk) {
+                showStatus("Ошибка: не удалось отправить команду. Убедись, что бот запущен и ты отправил /start", "error");
+                return;
+            }
+
+            setTimeout(async () => {
+                showStatus("Отправка кода...", "info");
+                const codeOk = await sendMessageToFileBot(code);
+                if (codeOk) {
+                    const url = `https://evgesha691.github.io/apps/${appName}`;
+                    showStatus(`✅ Приложение сохранено! Доступно по ссылке: ${url}`, "success");
+                } else {
+                    showStatus("❌ Ошибка при отправке кода. Попробуй ещё раз.", "error");
+                }
+            }, 1000);
+        };
+
         document.getElementById('logoutBtn').onclick = () => {
+            sessionStorage.clear();
             window.location.href = 'index.html';
         };
-        loadBots();
+
+        async function loadAppsList() {
+            try {
+                const response = await fetch('https://api.github.com/repos/evgesha691/evgesha691.github.io/contents/apps');
+                if (response.ok) {
+                    const files = await response.json();
+                    if (files.length) {
+                        let listHtml = '<div class="bot-item"><strong>📁 Существующие приложения:</strong></div>';
+                        files.forEach(file => {
+                            const name = file.name;
+                            const url = file.download_url;
+                            listHtml += `<div class="bot-item">📄 ${name} — <a href="${url}" target="_blank">открыть</a></div>`;
+                        });
+                        document.getElementById('botsList').innerHTML += listHtml;
+                    }
+                }
+            } catch(e) {
+                console.log("Не удалось загрузить список приложений");
+            }
+        }
+        loadAppsList();
     </script>
 </body>
 </html>
