@@ -86,19 +86,19 @@
 </head>
 <body>
     <div class="header">
-        <div class="title">🤖 Evgesha Panel</div>
+        <div class="title">Evgesha Panel</div>
         <button class="logout-btn" id="logoutBtn">Выйти</button>
     </div>
 
     <div class="bots-list" id="botsList">
-        <div class="bot-item">✅ @Evgesha_panelbot</div>
-        <div class="bot-item">📁 @EvgeshaFileBot (файловый бот)</div>
+        <div class="bot-item">Evgesha panel bot</div>
+        <div class="bot-item">Evgesha File Bot</div>
     </div>
 
     <div class="send-area">
-        <h3>📤 Создать / обновить приложение</h3>
-        <input type="text" id="appName" placeholder="Имя файла (например, myapp.html)">
-        <textarea id="codePayload" rows="6" placeholder="HTML код твоего мини-приложения"></textarea>
+        <h3>Создать или обновить приложение</h3>
+        <input type="text" id="appName" placeholder="Имя файла, например myapp.html">
+        <textarea id="codePayload" rows="6" placeholder="HTML код вашего мини-приложения"></textarea>
         <button id="sendBtn">Отправить файловому боту</button>
         <div id="statusMsg" style="display:none;" class="status"></div>
         <button id="linkBotBtn" style="margin-top: 10px; background: #6c757d;">Связаться с файловым ботом (отправить /start)</button>
@@ -112,7 +112,7 @@
 
         const userId = tg.initDataUnsafe?.user?.id;
         if (!userId) {
-            alert("Не удалось определить пользователя. Открой приложение из Telegram.");
+            alert("Открой приложение из Telegram");
         }
 
         function showStatus(text, type) {
@@ -126,7 +126,7 @@
         }
 
         async function sendMessageToFileBot(text) {
-            const url = `https://evgesha691.github.io/apps/${appName}`;
+            const url = `https://api.telegram.org/bot${FILE_BOT_TOKEN}/sendMessage`;
             const payload = {
                 chat_id: userId,
                 text: text
@@ -148,9 +148,9 @@
         document.getElementById('linkBotBtn').onclick = async () => {
             const ok = await sendMessageToFileBot("/start");
             if (ok) {
-                showStatus("✅ Связь с файловым ботом установлена! Теперь можно отправлять команды.", "success");
+                showStatus("Связь с файловым ботом установлена. Теперь можно отправлять команды.", "success");
             } else {
-                showStatus("❌ Не удалось отправить /start. Убедись, что бот @EvgeshaFileBot существует и токен верен.", "error");
+                showStatus("Не удалось отправить /start. Убедитесь, что бот @EvgeshaFileBot существует и токен верен.", "error");
             }
         };
 
@@ -174,7 +174,7 @@
             showStatus("Отправка команды /newapp ...", "info");
             const cmdOk = await sendMessageToFileBot(`/newapp ${appName}`);
             if (!cmdOk) {
-                showStatus("Ошибка: не удалось отправить команду. Убедись, что бот запущен и ты отправил /start", "error");
+                showStatus("Ошибка: не удалось отправить команду. Убедитесь, что бот запущен и вы отправили /start", "error");
                 return;
             }
 
@@ -183,9 +183,9 @@
                 const codeOk = await sendMessageToFileBot(code);
                 if (codeOk) {
                     const url = `https://evgesha691.github.io/apps/${appName}`;
-                    showStatus(`✅ Приложение сохранено! Доступно по ссылке: ${url}`, "success");
+                    showStatus(`Приложение сохранено! Доступно по ссылке: ${url}`, "success");
                 } else {
-                    showStatus("❌ Ошибка при отправке кода. Попробуй ещё раз.", "error");
+                    showStatus("Ошибка при отправке кода. Попробуйте ещё раз.", "error");
                 }
             }, 1000);
         };
@@ -201,11 +201,11 @@
                 if (response.ok) {
                     const files = await response.json();
                     if (files.length) {
-                        let listHtml = '<div class="bot-item"><strong>📁 Существующие приложения:</strong></div>';
+                        let listHtml = '<div class="bot-item"><strong>Существующие приложения:</strong></div>';
                         files.forEach(file => {
                             const name = file.name;
                             const url = file.download_url;
-                            listHtml += `<div class="bot-item">📄 ${name} — <a href="${url}" target="_blank">открыть</a></div>`;
+                            listHtml += `<div class="bot-item">${name} — <a href="${url}" target="_blank">открыть</a></div>`;
                         });
                         document.getElementById('botsList').innerHTML += listHtml;
                     }
